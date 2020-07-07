@@ -51,6 +51,8 @@ void loop() {
        Serial.println(request.url);
        Serial.println(request.userAgent);
        Serial.println(request.host);
+       Serial.println(info.authType);
+       Serial.println(info.authCredential);
        Serial.println(request.contentLength);
        Serial.println(request.contentType);
        Serial.println(request.body);
