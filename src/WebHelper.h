@@ -8,11 +8,12 @@ enum RequestType {
     PATCH = 4,
     DELETE = 5,
     OPTIONS = 6,
-    CONNECT = 8,
-    TRACE = 9,    
+    CONNECT = 7,
+    TRACE = 8
 };
 
 struct RequestInfo {  
+  RequestInfo() : contentLength(-1) { }
   int contentLength;
   String contentType;
   String host;
@@ -20,6 +21,7 @@ struct RequestInfo {
   String userAgent;
   String requestMethod;
   String body;
+  String head;
   enum RequestType requestType;
 };
 

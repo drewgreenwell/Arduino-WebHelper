@@ -33,10 +33,8 @@ RequestInfo WebHelper::parseRequest(Client &client)
 {
     RequestInfo request = RequestInfo();
     request.requestType = RequestType::GET;
-    String httpHeader = String();
-    String httpBody = String();
     String line = String();
-    httpHeader = httpBody = line = "";
+    line = "";
     if (client)
     {
         // an http request ends with a blank line
@@ -47,42 +45,53 @@ RequestInfo WebHelper::parseRequest(Client &client)
             if (client.available())
             {
                 char c = client.read();
-                httpHeader += c;
+                request.head += c;
                 line += c;
-                // if you've gotten to the end of the line (received a newline
-                // character) and the line is blank, the http request has ended,
-                // so you can send a reply
+                // end of http request is marked with a blank line
                 if (c == '\n' && currentLineIsBlank)
                 {
+                    // check to see if a reauest body is being passed
                     if(request.contentLength > 0) {
+                        // in case of asynchronous body post, wait up to 2 seconds on client
                         int timeOut = 2000;
+                        unsigned long startTime = millis();
+                        unsigned long currentTime;
                         while (!client.available()) {
-                            delay(1);
-                            if ((--timeOut) <= 0)
+                            currentTime = millis();
+                            if (currentTime - startTime > timeOut)
                                 break;
                         }
                         while (client.available())
                         {
+                            // read the body of the request
                             for(int i = 0; i < request.contentLength; i++){
                                 char b = client.read();
-                                httpBody = httpBody + b;
+                                request.body += b;
                             }
-                            request.body = httpBody;
                         }
                     }
                     break;
                 }
                 if (c == '\n')
                 {
-                    // you're starting a new line
+                    // starting a new line, check this line against the values
+                    // negate any that have already run
                     if (request.requestMethod.length() == 0) {
                         setRequestTypeAndUrl(request, line);
                     }
-                    setUserAgent(request, line);
-                    setHost(request, line);
-                    setContentLength(request, line);
-                    setContentType(request, line);
-
+                    if (request.userAgent.length() == 0) {
+                        setUserAgent(request, line);
+                    }
+                    if (request.host.length() == 0) {
+                        setHost(request, line);
+                    }                    
+                    if (request.contentType.length() == 0) {
+                        setContentType(request, line);
+                    }
+                    // integer
+                    if (request.contentLength == -1) {
+                        setContentLength(request, line);
+                    }
                     line = "";
                     currentLineIsBlank = true;
                 }
