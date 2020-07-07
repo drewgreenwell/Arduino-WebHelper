@@ -28,6 +28,7 @@ const char * WebHelper::REQ_USER_AGENT = "User-Agent: ";
 const char * WebHelper::REQ_CONTENT_TYPE = "Content-Type: ";
 const char * WebHelper::REQ_HOST = "Host: ";
 const char * WebHelper::REQ_CONTENT_LENGTH = "Content-Length: ";
+const char * WebHelper::REQ_AUTH = "Authorization: ";
 
 RequestInfo WebHelper::parseRequest(Client &client)
 {
@@ -84,11 +85,14 @@ RequestInfo WebHelper::parseRequest(Client &client)
                     }
                     if (request.host.length() == 0) {
                         setHost(request, line);
-                    }                    
+                    }
+                    if (request.authType.length() == 0) {
+                        setAuthorization(request, line);
+                    }                  
                     if (request.contentType.length() == 0) {
                         setContentType(request, line);
                     }
-                    // integer
+                    // contentLength defaults to -1
                     if (request.contentLength == -1) {
                         setContentLength(request, line);
                     }
@@ -155,6 +159,19 @@ void WebHelper::setHost(RequestInfo & request, String &line) {
     if(line.startsWith(REQ_HOST)) {
         request.host = line.substring(strlen(REQ_HOST));
         request.host.trim();
+    }
+}
+
+void WebHelper::setAuthorization(RequestInfo & request, String &line) {
+    if(!line) {
+        return;
+    }
+    if(line.startsWith(REQ_AUTH)) {
+        int last = line.lastIndexOf(' ');
+        request.authType = line.substring(strlen(REQ_AUTH), last);
+        request.authCredential = line.substring(last);
+        request.authType.trim();
+        request.authCredential.trim();
     }
 }
 
