@@ -24,6 +24,10 @@ struct RequestInfo {
   String head;
   String authType;
   String authCredential;
+  String accept;
+  String acceptEncoding;
+  String acceptLanguage;
+  String connection;
   enum RequestType requestType;
 };
 
@@ -31,20 +35,22 @@ class WebHelper
 {
     private:
         static void init();
+        static void setRequestValue(String &property, String &line, const char * match);
         static void setRequestTypeAndUrl(RequestInfo &request, String &line);        
-        static void setHost(RequestInfo &request, String &line);
-        static void setAuthorization(RequestInfo &request, String &line);
-        static void setUserAgent(RequestInfo &request, String &line);        
+        static void setAuthorization(RequestInfo &request, String &line);    
         static void setContentLength(RequestInfo &request, String &line);
-        static void setContentType(RequestInfo &request, String &line);
     public:
         static const char * REQ_USER_AGENT;
         static const char * REQ_CONTENT_TYPE;
         static const char * REQ_HOST;
         static const char * REQ_CONTENT_LENGTH;
         static const char * REQ_AUTH;
+        static const char * REQ_ACCEPT;
+        static const char * REQ_ACCEPT_ENC;
+        static const char * REQ_ACCEPT_LNG;
         static String RequestTypes[];
         static RequestInfo parseRequest(Client &client);
+        // static void handleRequest(char * route, );
 
 };
 

@@ -29,6 +29,9 @@ const char * WebHelper::REQ_CONTENT_TYPE = "Content-Type: ";
 const char * WebHelper::REQ_HOST = "Host: ";
 const char * WebHelper::REQ_CONTENT_LENGTH = "Content-Length: ";
 const char * WebHelper::REQ_AUTH = "Authorization: ";
+const char * WebHelper::REQ_ACCEPT = "Accept: ";
+const char * WebHelper::REQ_ACCEPT_ENC = "Accept-Encoding: ";
+const char * WebHelper::REQ_ACCEPT_LNG = "Accept-Language: ";
 
 RequestInfo WebHelper::parseRequest(Client &client)
 {
@@ -80,22 +83,36 @@ RequestInfo WebHelper::parseRequest(Client &client)
                     if (request.requestMethod.length() == 0) {
                         setRequestTypeAndUrl(request, line);
                     }
-                    if (request.userAgent.length() == 0) {
-                        setUserAgent(request, line);
-                    }
-                    if (request.host.length() == 0) {
-                        setHost(request, line);
-                    }
                     if (request.authType.length() == 0) {
                         setAuthorization(request, line);
-                    }                  
-                    if (request.contentType.length() == 0) {
-                        setContentType(request, line);
                     }
                     // contentLength defaults to -1
                     if (request.contentLength == -1) {
                         setContentLength(request, line);
                     }
+                    if (request.userAgent.length() == 0) {
+                        setRequestValue(request.userAgent, line, REQ_USER_AGENT);
+                    }
+                    if (request.host.length() == 0) {
+                        setRequestValue(request.host, line, REQ_HOST);
+                    }
+                                      
+                    if (request.contentType.length() == 0) {
+                        setRequestValue(request.contentType, line, REQ_CONTENT_TYPE);
+                    }
+
+                    if (request.accept.length() == 0) {
+                        setRequestValue(request.accept, line, REQ_ACCEPT);
+                    }
+
+                    if (request.acceptEncoding.length() == 0) {
+                        setRequestValue(request.acceptEncoding, line, REQ_ACCEPT_ENC);
+                    }
+
+                    if (request.acceptLanguage.length() == 0) {
+                        setRequestValue(request.acceptLanguage, line, REQ_ACCEPT_LNG);
+                    }
+
                     line = "";
                     currentLineIsBlank = true;
                 }
@@ -111,20 +128,14 @@ RequestInfo WebHelper::parseRequest(Client &client)
     }
 }
 
-String getDelimitedValue(String data, char separator, int index)
-{
-    int found = 0;
-    int strIndex[] = { 0, -1 };
-    int maxIndex = data.length() - 1;
-
-    for (int i = 0; i <= maxIndex && found <= index; i++) {
-        if (data.charAt(i) == separator || i == maxIndex) {
-            found++;
-            strIndex[0] = strIndex[1] + 1;
-            strIndex[1] = (i == maxIndex) ? i+1 : i;
-        }
+void WebHelper::setRequestValue(String & property, String &line, const char * match) {
+    if(!line) {
+        return;
     }
-    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+    if(line.startsWith(match)) {
+        property = line.substring(strlen(match));
+        property.trim();
+    }
 }
 
 void WebHelper::setRequestTypeAndUrl(RequestInfo & request, String &line) {
@@ -142,26 +153,6 @@ void WebHelper::setRequestTypeAndUrl(RequestInfo & request, String &line) {
     }
 }
 
-static String getValue(RequestInfo &request, String &line, char * match) {
-    if(!line) {
-        return "";
-    }
-    if(line.startsWith(match)) {
-        return line.substring(strlen(match));
-    }
-    return "";
-}
-
-void WebHelper::setHost(RequestInfo & request, String &line) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(REQ_HOST)) {
-        request.host = line.substring(strlen(REQ_HOST));
-        request.host.trim();
-    }
-}
-
 void WebHelper::setAuthorization(RequestInfo & request, String &line) {
     if(!line) {
         return;
@@ -175,31 +166,11 @@ void WebHelper::setAuthorization(RequestInfo & request, String &line) {
     }
 }
 
-void WebHelper::setUserAgent(RequestInfo & request, String &line) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(REQ_USER_AGENT)) {
-        request.userAgent = line.substring(strlen(REQ_USER_AGENT));
-        request.userAgent.trim();
-    }
-}
-
 void WebHelper::setContentLength(RequestInfo & request, String &line) {
     if(!line) {
         return;
     }
     if(line.startsWith(REQ_CONTENT_LENGTH)) {
         request.contentLength = line.substring(strlen(REQ_CONTENT_LENGTH)).toInt();
-    }
-}
-
-void WebHelper::setContentType(RequestInfo & request, String &line) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(REQ_CONTENT_TYPE)) {
-        request.contentType = line.substring(strlen(REQ_CONTENT_TYPE));
-        request.contentType.trim();
     }
 }
