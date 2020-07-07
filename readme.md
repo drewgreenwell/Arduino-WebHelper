@@ -17,8 +17,8 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
        Serial.println(request.url);
        Serial.println(request.host);
        Serial.println(request.userAgent);
-       Serial.println(info.authType);
-       Serial.println(info.authCredential);
+       Serial.println(request.authType);
+       Serial.println(request.authCredential);
        Serial.println(request.contentLength);
        Serial.println(request.contentType);
        Serial.println(request.body);
