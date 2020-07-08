@@ -18,6 +18,8 @@ struct RequestInfo {
   String contentType;
   String host;
   String url;
+  String rawUrl;
+  String query;
   String userAgent;
   String requestMethod;
   String body;
@@ -35,10 +37,10 @@ class WebHelper
 {
     private:
         static void init();
-        static void setRequestValue(String &property, String &line, const char * match);
-        static void setRequestTypeAndUrl(RequestInfo &request, String &line);        
-        static void setAuthorization(RequestInfo &request, String &line);    
-        static void setContentLength(RequestInfo &request, String &line);
+        static boolean setRequestValue(String &property, String &line, const char * match);
+        static boolean setRequestTypeAndUrl(RequestInfo &request, String &line);        
+        static boolean setAuthorization(RequestInfo &request, String &line);    
+        static boolean setContentLength(RequestInfo &request, String &line);
     public:
         static const char * REQ_USER_AGENT;
         static const char * REQ_CONTENT_TYPE;
@@ -48,10 +50,10 @@ class WebHelper
         static const char * REQ_ACCEPT;
         static const char * REQ_ACCEPT_ENC;
         static const char * REQ_ACCEPT_LNG;
-        static String RequestTypes[];
+        static const char * REQ_CONNECTION;
+        static const String RequestTypes[];
         static RequestInfo parseRequest(Client &client);
-        // static void handleRequest(char * route, );
-
+        static boolean checkRoutes(char * routes[], void (*handlers[])(RequestInfo), RequestInfo request);
 };
 
 #endif

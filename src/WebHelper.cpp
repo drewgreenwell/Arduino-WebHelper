@@ -1,19 +1,15 @@
 #include <Arduino.h>
 #include <Client.h>
 #include <WebHelper.h>
-/*
-POST / HTTP/1.1
-User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.18362.752
-Content-Type: application/json
-Host: 192.168.1.123
-Content-Length: 15
-*/
+
+#define REQ_TYPE_LENGTH 8
+
 void WebHelper::init()
 {
      
 }
 
-String WebHelper::RequestTypes[8] = {
+const String WebHelper::RequestTypes[REQ_TYPE_LENGTH] = {
     "GET",
     "POST",
     "PUT",
@@ -24,14 +20,80 @@ String WebHelper::RequestTypes[8] = {
     "TRACE"
 };
 
-const char * WebHelper::REQ_USER_AGENT = "User-Agent: ";
-const char * WebHelper::REQ_CONTENT_TYPE = "Content-Type: ";
-const char * WebHelper::REQ_HOST = "Host: ";
-const char * WebHelper::REQ_CONTENT_LENGTH = "Content-Length: ";
-const char * WebHelper::REQ_AUTH = "Authorization: ";
-const char * WebHelper::REQ_ACCEPT = "Accept: ";
-const char * WebHelper::REQ_ACCEPT_ENC = "Accept-Encoding: ";
-const char * WebHelper::REQ_ACCEPT_LNG = "Accept-Language: ";
+const char * WebHelper::REQ_USER_AGENT = "User-Agent:";
+const char * WebHelper::REQ_CONTENT_TYPE = "Content-Type:";
+const char * WebHelper::REQ_HOST = "Host:";
+const char * WebHelper::REQ_CONTENT_LENGTH = "Content-Length:";
+const char * WebHelper::REQ_AUTH = "Authorization:";
+const char * WebHelper::REQ_ACCEPT = "Accept:";
+const char * WebHelper::REQ_ACCEPT_ENC = "Accept-Encoding:";
+const char * WebHelper::REQ_ACCEPT_LNG = "Accept-Language:";
+const char * WebHelper::REQ_CONNECTION = "Connection:";
+
+
+boolean WebHelper::setRequestValue(String & property, String &line, const char * match) {
+    if(!line) {
+        return false;
+    }
+    boolean found = false;
+    if(line.startsWith(match)) {
+        found = true;
+        property = line.substring(strlen(match));
+        property.trim();
+    }
+    return found;
+}
+
+boolean WebHelper::setRequestTypeAndUrl(RequestInfo & request, String &line) {
+    if (!line) {
+        return false;
+    }
+    boolean found = false;
+    for (int i = 0; i < REQ_TYPE_LENGTH; i++) {
+        if(line.startsWith(RequestTypes[i])) {
+            found = true;
+            request.requestMethod = RequestTypes[i];
+            request.requestType = static_cast<RequestType>(i);
+            request.rawUrl = line.substring(line.indexOf(' '), line.lastIndexOf(' '));
+            request.rawUrl.trim();
+            int idx = request.rawUrl.indexOf('?');
+            if(idx != -1) {
+                request.url = request.rawUrl.substring(0, idx);
+                request.query = request.rawUrl.substring(idx);
+            }
+            break;
+        }
+    }
+    return found;
+}
+
+boolean WebHelper::setAuthorization(RequestInfo & request, String &line) {
+    if(!line) {
+        return false;
+    }
+    boolean found = false;
+    if(line.startsWith(REQ_AUTH)) {
+        found = true;
+        int last = line.lastIndexOf(' ');
+        request.authType = line.substring(strlen(REQ_AUTH), last);
+        request.authType.trim();
+        request.authCredential = line.substring(last);
+        request.authCredential.trim();
+    }
+    return found;
+}
+
+boolean WebHelper::setContentLength(RequestInfo & request, String &line) {
+    if(!line) {
+        return false;
+    }
+    boolean found = false;
+    if(line.startsWith(REQ_CONTENT_LENGTH)) {
+        found = true;
+        request.contentLength = line.substring(strlen(REQ_CONTENT_LENGTH)).toInt();        
+    }
+    return found;
+}
 
 RequestInfo WebHelper::parseRequest(Client &client)
 {
@@ -80,37 +142,42 @@ RequestInfo WebHelper::parseRequest(Client &client)
                 {
                     // starting a new line, check this line against the values
                     // negate any that have already run
+                    boolean matched = false;
                     if (request.requestMethod.length() == 0) {
-                        setRequestTypeAndUrl(request, line);
+                        matched = setRequestTypeAndUrl(request, line);
                     }
-                    if (request.authType.length() == 0) {
-                        setAuthorization(request, line);
+                    if (!matched && request.authType.length() == 0) {
+                        matched = setAuthorization(request, line);
                     }
                     // contentLength defaults to -1
-                    if (request.contentLength == -1) {
-                        setContentLength(request, line);
+                    if (!matched && request.contentLength == -1) {
+                        matched = setContentLength(request, line);
                     }
-                    if (request.userAgent.length() == 0) {
-                        setRequestValue(request.userAgent, line, REQ_USER_AGENT);
+                    if (!matched && request.userAgent.length() == 0) {
+                        matched = setRequestValue(request.userAgent, line, REQ_USER_AGENT);
                     }
-                    if (request.host.length() == 0) {
-                        setRequestValue(request.host, line, REQ_HOST);
+                    if (!matched && request.host.length() == 0) {
+                        matched = setRequestValue(request.host, line, REQ_HOST);
                     }
                                       
-                    if (request.contentType.length() == 0) {
-                        setRequestValue(request.contentType, line, REQ_CONTENT_TYPE);
+                    if (!matched && request.contentType.length() == 0) {
+                        matched = setRequestValue(request.contentType, line, REQ_CONTENT_TYPE);
                     }
 
-                    if (request.accept.length() == 0) {
-                        setRequestValue(request.accept, line, REQ_ACCEPT);
+                    if (!matched && request.accept.length() == 0) {
+                        matched = setRequestValue(request.accept, line, REQ_ACCEPT);
                     }
 
-                    if (request.acceptEncoding.length() == 0) {
-                        setRequestValue(request.acceptEncoding, line, REQ_ACCEPT_ENC);
+                    if (!matched && request.acceptEncoding.length() == 0) {
+                        matched = setRequestValue(request.acceptEncoding, line, REQ_ACCEPT_ENC);
                     }
 
-                    if (request.acceptLanguage.length() == 0) {
-                        setRequestValue(request.acceptLanguage, line, REQ_ACCEPT_LNG);
+                    if (!matched && request.acceptLanguage.length() == 0) {
+                        matched = setRequestValue(request.acceptLanguage, line, REQ_ACCEPT_LNG);
+                    }
+
+                    if (!matched && request.connection.length() == 0) {
+                        matched = setRequestValue(request.connection, line, REQ_CONNECTION);
                     }
 
                     line = "";
@@ -125,52 +192,18 @@ RequestInfo WebHelper::parseRequest(Client &client)
             }
         }
         return request;
-    }
+    }    
 }
 
-void WebHelper::setRequestValue(String & property, String &line, const char * match) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(match)) {
-        property = line.substring(strlen(match));
-        property.trim();
-    }
-}
-
-void WebHelper::setRequestTypeAndUrl(RequestInfo & request, String &line) {
-    if (!line) {
-        return;
-    }
-    for (int i = 0; i < 8; i++) {
-        if(line.startsWith(RequestTypes[i])) {
-            request.requestMethod = RequestTypes[i];
-            request.requestType = static_cast<RequestType>(i);
-            request.url = line.substring(line.indexOf(' '), line.lastIndexOf(' '));
-            request.url.trim();
+boolean WebHelper::checkRoutes(char * routes[], void (*handlers[])(RequestInfo), RequestInfo request) {
+    boolean match = false;
+    int len = *(&routes + 1) - routes;
+    for(int i = 1; i < len; i++) {
+        if(request.url == routes[i]) {
+            match = true;
+            handlers[i](request);
             break;
         }
     }
-}
-
-void WebHelper::setAuthorization(RequestInfo & request, String &line) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(REQ_AUTH)) {
-        int last = line.lastIndexOf(' ');
-        request.authType = line.substring(strlen(REQ_AUTH), last);
-        request.authCredential = line.substring(last);
-        request.authType.trim();
-        request.authCredential.trim();
-    }
-}
-
-void WebHelper::setContentLength(RequestInfo & request, String &line) {
-    if(!line) {
-        return;
-    }
-    if(line.startsWith(REQ_CONTENT_LENGTH)) {
-        request.contentLength = line.substring(strlen(REQ_CONTENT_LENGTH)).toInt();
-    }
+    return match;
 }

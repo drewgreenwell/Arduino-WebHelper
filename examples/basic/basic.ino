@@ -1,5 +1,6 @@
 /*
   basic example based on WifiWebServer example from WiFiNINA
+  see loop() for usage
 */
 #include <SPI.h>
 #include <WiFiNINA.h>
@@ -41,25 +42,22 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-   WiFiClient client = server.available(); // or ethernet client
+  WiFiClient client = server.available(); // or ethernet client
   if (client) {
     while (client.connected()) {
       Serial.println("new client connected");
       if (client.available()) {
+       // get details about the current request
        RequestInfo request = WebHelper::parseRequest(client);
-       Serial.println(request.requestMethod);
-       Serial.println(request.url);
-       Serial.println(request.userAgent);
-       Serial.println(request.host);
-       Serial.println(request.authType);
-       Serial.println(request.authCredential);
-       Serial.println(request.contentLength);
-       Serial.println(request.contentType);
-       Serial.println(request.body);
+       // print the details to serial
+       printRequestInfo(Serial, request);       
        client.println("HTTP/1.1 200 OK");
-       client.println("Content-type:text/html");
+       client.println("Content-type: text/html");
        client.println();
-       client.println("<html><body>Success</body></html>");
+       client.println("<html><body><h1>Results</h1><textarea>");
+       // print the details to the html page
+       printRequestInfo(client, request);
+       client.println("</textarea></body></html>");
        client.println();
        break;
       }
@@ -67,6 +65,27 @@ void loop() {
     client.stop();
     Serial.println("client disconnected");
   }
+}
+
+template<class T>
+void printRequestInfo(T printer, RequestInfo request) {
+   printer.println("requestMethod: " + request.requestMethod);
+   printer.println("rawUrl: " + request.rawUrl);
+   printer.println("url: " + request.url);
+   printer.println("query: " + request.query);
+   printer.println("userAgent: " + request.userAgent);
+   printer.println("host: " + request.host);
+   printer.print("contentLength: ");
+   printer.println(request.contentLength);
+   printer.println("contentType: " + request.contentType);
+   printer.println("authType: " + request.authType);
+   printer.println("authCredential: " + request.authCredential);
+   printer.println("connection: " + request.connection);
+   printer.println("accept: " + request.accept);
+   printer.println("acceptLanguage: " + request.acceptLanguage);
+   printer.println("acceptEncodingethod: " + request.acceptEncoding);
+   printer.println("connection: " + request.connection);
+   printer.println("body: " + request.body);  
 }
 
 void printWifiStatus() {
