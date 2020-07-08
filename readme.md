@@ -30,7 +30,6 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
         Serial.println("accept: " + request.accept);
         Serial.println("acceptLanguage: " + request.acceptLanguage);
         Serial.println("acceptEncodingethod: " + request.acceptEncoding);
-        Serial.println("connection: " + request.connection);
         Serial.println("body: " + request.body); 
         // respond to client 
         client.println("HTTP/1.1 200 OK");
@@ -62,7 +61,6 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
     accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
     acceptLanguage: en-US,en;q=0.5
     acceptEncodingethod: gzip, deflate
-    connection: keep-alive
     body:
 ```
 
@@ -82,7 +80,6 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
     accept: 
     acceptLanguage: 
     acceptEncodingethod: 
-    connection: 
     body: {"oi": "hello"}
 
 ```

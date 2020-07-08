@@ -84,7 +84,6 @@ void printRequestInfo(T printer, RequestInfo request) {
    printer.println("accept: " + request.accept);
    printer.println("acceptLanguage: " + request.acceptLanguage);
    printer.println("acceptEncodingethod: " + request.acceptEncoding);
-   printer.println("connection: " + request.connection);
    printer.println("body: " + request.body);  
 }
 
