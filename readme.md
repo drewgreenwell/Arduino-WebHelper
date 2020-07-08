@@ -12,22 +12,33 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
     while (client.connected()) {      
       Serial.println("new client connected");
       if (client.available()) {
-       RequestInfo request = WebHelper::parseRequest(client);
-       Serial.println(request.requestMethod);
-       Serial.println(request.url);
-       Serial.println(request.host);
-       Serial.println(request.userAgent);
-       Serial.println(request.authType);
-       Serial.println(request.authCredential);
-       Serial.println(request.contentLength);
-       Serial.println(request.contentType);
-       Serial.println(request.body);
-       client.println("HTTP/1.1 200 OK");
-       client.println("Content-type:text/html");
-       client.println();
-       client.println("<html><body>Success</body></html>");
-       client.println();
-       break;
+        // get info about current request
+        RequestInfo request = WebHelper::parseRequest(client);
+        // print the info to serial
+        Serial.println("requestMethod: " + request.requestMethod);
+        Serial.println("rawUrl: " + request.rawUrl);
+        Serial.println("url: " + request.url);
+        Serial.println("query: " + request.query);
+        Serial.println("userAgent: " + request.userAgent);
+        Serial.println("host: " + request.host);
+        Serial.print("contentLength: ");
+        Serial.println(request.contentLength);
+        Serial.println("contentType: " + request.contentType);
+        Serial.println("authType: " + request.authType);
+        Serial.println("authCredential: " + request.authCredential);
+        Serial.println("connection: " + request.connection);
+        Serial.println("accept: " + request.accept);
+        Serial.println("acceptLanguage: " + request.acceptLanguage);
+        Serial.println("acceptEncodingethod: " + request.acceptEncoding);
+        Serial.println("connection: " + request.connection);
+        Serial.println("body: " + request.body); 
+        // respond to client 
+        client.println("HTTP/1.1 200 OK");
+        client.println("Content-type: text/html");
+        client.println();
+        client.println("<html><body>Success</body></html>");
+        client.println();
+        break;
       }
     }
     client.stop();
