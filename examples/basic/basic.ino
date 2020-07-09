@@ -52,7 +52,7 @@ void loop() {
        // print the details to serial
        printRequestInfo(Serial, request);       
        client.println("HTTP/1.1 200 OK");
-       client.println("Content-type: text/html");
+       client.println("Content-Type: text/html");
        client.println();
        client.println("<html><body><h1>Results</h1><textarea>");
        // print the details to the html page
@@ -70,8 +70,8 @@ void loop() {
 template<class T>
 void printRequestInfo(T printer, RequestInfo request) {
    printer.println("requestMethod: " + request.requestMethod);
-   printer.println("rawUrl: " + request.rawUrl);
    printer.println("url: " + request.url);
+   printer.println("path: " + request.path);
    printer.println("query: " + request.query);
    printer.println("userAgent: " + request.userAgent);
    printer.println("host: " + request.host);

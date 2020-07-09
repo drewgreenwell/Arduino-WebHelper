@@ -16,8 +16,8 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
         RequestInfo request = WebHelper::parseRequest(client);
         // print the info to serial
         Serial.println("requestMethod: " + request.requestMethod);
-        Serial.println("rawUrl: " + request.rawUrl);
         Serial.println("url: " + request.url);
+        Serial.println("path: " + request.path);
         Serial.println("query: " + request.query);
         Serial.println("userAgent: " + request.userAgent);
         Serial.println("host: " + request.host);
@@ -48,8 +48,8 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
 ## Example GET Output
 ```
     requestMethod: GET
-    rawUrl: /my-url/?with-a-query=1
-    url: /my-url/
+    url: /my-url/?with-a-query=1
+    path: /my-url/
     query: ?with-a-query=1
     userAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0
     host: 192.168.1.123
@@ -67,8 +67,8 @@ This has been tested on the Arduino MKR WiFi 1010 but should work with any netwo
 ## Example POST Output
 ```
     requestMethod: POST
-    rawUrl: /my-url/?with-a-query=1
-    url: /my-url/
+    url: /my-url/?with-a-query=1
+    path: /my-url/
     query: ?with-a-query=1
     userAgent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.18362.752
     host: 192.168.1.123

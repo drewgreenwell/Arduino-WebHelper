@@ -54,12 +54,14 @@ boolean WebHelper::setRequestTypeAndUrl(RequestInfo & request, String &line) {
             found = true;
             request.requestMethod = RequestTypes[i];
             request.requestType = static_cast<RequestType>(i);
-            request.rawUrl = line.substring(line.indexOf(' '), line.lastIndexOf(' '));
-            request.rawUrl.trim();
-            int idx = request.rawUrl.indexOf('?');
+            request.url = line.substring(line.indexOf(' '), line.lastIndexOf(' '));
+            request.url.trim();
+            int idx = request.url.indexOf('?');
             if(idx != -1) {
-                request.url = request.rawUrl.substring(0, idx);
-                request.query = request.rawUrl.substring(idx);
+                request.path = request.url.substring(0, idx);
+                request.query = request.url.substring(idx);
+            } else {
+                request.path = request.url;
             }
             break;
         }
@@ -195,13 +197,13 @@ RequestInfo WebHelper::parseRequest(Client &client)
     }    
 }
 
-boolean WebHelper::checkRoutes(char * routes[], void (*handlers[])(RequestInfo), RequestInfo request) {
+boolean WebHelper::handleRoutes(Route *routes, int routes_length, RequestInfo &request, Client &client) {
     boolean match = false;
-    int len = *(&routes + 1) - routes;
-    for(int i = 1; i < len; i++) {
-        if(request.url == routes[i]) {
+    
+    for(int i = 0; i < routes_length; i++) {
+        if(request.url == routes[i].route || request.path == routes[i].route) {
             match = true;
-            handlers[i](request);
+            routes[i].handler(request, client);
             break;
         }
     }

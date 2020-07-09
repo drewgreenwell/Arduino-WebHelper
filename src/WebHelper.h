@@ -18,7 +18,7 @@ struct RequestInfo {
   String contentType;
   String host;
   String url;
-  String rawUrl;
+  String path;
   String query;
   String userAgent;
   String requestMethod;
@@ -31,6 +31,13 @@ struct RequestInfo {
   String acceptLanguage;
   String connection;
   enum RequestType requestType;
+};
+
+typedef void (*RouteHandler)(RequestInfo &request, Client &client);
+
+struct Route {
+    String route;
+    RouteHandler handler;
 };
 
 class WebHelper
@@ -53,7 +60,7 @@ class WebHelper
         static const char * REQ_CONNECTION;
         static const String RequestTypes[];
         static RequestInfo parseRequest(Client &client);
-        static boolean checkRoutes(char * routes[], void (*handlers[])(RequestInfo), RequestInfo request);
+        static boolean handleRoutes(Route *routes, int routes_length, RequestInfo &request, Client &client);
 };
 
 #endif
