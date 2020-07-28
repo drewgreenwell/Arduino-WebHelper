@@ -1,7 +1,7 @@
 Arduino WebHelper
 =================
 
-This is a library for easily handling incoming web requests on the Arduino platform. It is intended to get you up and running quickly by handling the request parsing so you can focus on what you want to do.
+This is a library for easily handling incoming web requests and routing them on the Arduino platform. It is intended to get you up and running quickly by handling the request parsing so you can focus on what you want to do.
 
 Arduino WebHelper has been tested on the Arduino MKR WiFi 1010 but should work with any network interface based on Client.
 
@@ -151,11 +151,11 @@ void handleGenericRoute(RequestInfo &request, Client &client) {
   WebHelper::respondWith(StatusCode::OK, "text/html", DEFAULT_HEADERS, "A handled route", client, tokenHandler);
 }
 /* 
-  If a TokenHandler is passed to respondsWith, any time a string is encountered with 
+  If a TokenHandler is passed to respondWith, any time a string is encountered with 
   a matching START_TOKEN and END_TOKEN the token value is passed to the TokenHandler
   The default values for START_TOKEN and END_TOKEN can be overidden with a #define.
-  #define START_TOKEN = "{-{"
-  #define END_TOKEN = "}-}"
+  #define START_TOKEN "{-{"
+  #define END_TOKEN "}-}"
 */ 
 void tokenHandler(String &token, Client &client) {
   Serial.print("tokenHandler called: ");
