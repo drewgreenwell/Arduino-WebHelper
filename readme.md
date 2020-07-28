@@ -9,7 +9,9 @@ Arduino WebHelper has been tested on the Arduino MKR WiFi 1010 but should work w
 
 *from basic sketch in examples*
 
-This example parses a request, prints the information to serial and responds with HTML. In this example you would would look at the request object and determine what code you needed to execute. For more advanecd Route handling see the Route handling example. 
+This example parses a request, prints the information to serial and responds with HTML. In this example you would would look at the request object and determine what code you needed to execute. 
+
+> For more advanecd Route handling see the Route handling example. 
 
 ```c++
 #include <WebHelper.h>
@@ -98,7 +100,8 @@ void loop() {
 
 ```
 
-##Route Handling
+## Route Handling
+
 *from route-handling sketch in examples*
 
 ```c++
