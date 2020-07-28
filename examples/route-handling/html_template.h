@@ -1,4 +1,7 @@
-<!doctype html>
+// This is a modified version of the dashboard example from here:
+// https://getbootstrap.com/docs/4.4/examples/dashboard/
+
+const char DASHBOARD_TEMPLATE[] PROGMEM = { R"=====(<!doctype html>
 <html lang='en'>
   <head>
     <meta charset='utf-8'>
@@ -14,8 +17,8 @@
       <input class='form-control form-control-dark w-100' type='text' placeholder='Command' aria-label='Command'>
       <ul class='navbar-nav px-3'>
         <li class='nav-item text-nowrap'>
-          <a class='nav-link api-link' href='/command/restart' title='Restart' data-toggle="tooltip"><span data-feather='refresh-cw'></span></a>
-          <a class='nav-link api-link' href='/command/poweroff' title='Power Off' data-toggle="tooltip"><span data-feather='power'></span></a>
+          <a class='nav-link' href='#' title='Reset' data-toggle="tooltip"><span data-feather='refresh-cw'></span></a>
+          <a class='nav-link' href='#' title='Power Off' data-toggle="tooltip"><span data-feather='power'></span></a>
         </li>
       </ul>
     </nav>
@@ -55,7 +58,7 @@
               </div>
             </div>      
             <canvas class='my-4 w-100' id='myChart' width='900' height='380'></canvas>
-            {{BODY}}
+            {-{BODY}-}
             <h2>Section title</h2>
             <div class='table-responsive'>
               <table class='table table-striped table-sm'>
@@ -103,4 +106,4 @@
       <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js'></script>
       <script src='https://drewgreenwell.github.io/Arduino-WebHelper/html-templates/js/dashboard.js'></script>
     </body>
-</html>
+</html>)====="};

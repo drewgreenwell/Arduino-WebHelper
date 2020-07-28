@@ -30,6 +30,13 @@ enum StatusCode {
     PERMISSION_DENIED = 14
 };
 
+enum RouteMatchType {
+    FULL = 1,
+    STARTS_WITH = 2,
+    ENDS_WITH = 3,
+    CONTAINS = 4
+};
+
 struct RequestInfo {  
   RequestInfo() : contentLength(-1) { }
   int contentLength;
@@ -58,10 +65,12 @@ struct ResponseType {
 };
 
 typedef void (*RouteHandler)(RequestInfo &request, Client &client);
+typedef void (*TokenHandler)(String &token, Client &client);
 
 struct Route {
     String route;
     RouteHandler handler;
+    RouteMatchType matchType;
 };
 
 class WebHelper
@@ -86,7 +95,7 @@ class WebHelper
         static const ResponseType ResponseTypes[];
         static RequestInfo parseRequest(Client &client);
         static boolean handleRoutes(Route *routes, int routes_length, RequestInfo &request, Client &client);
-        static void respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client);
+        static void respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client, TokenHandler tokenHandler);
 };
 
 #endif

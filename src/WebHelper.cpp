@@ -8,8 +8,10 @@ using namespace std;
 
 #define REQ_TYPE_LENGTH 8
 #define RESP_TYPE_LENGTH 15
-#define START_TOKEN "{{"
-#define END_TOKEN "}}"
+#define MAX_TOKEN_LENGTH 64
+#define START_TOKEN "{-{"
+#define END_TOKEN "}-}"
+
 void WebHelper::init()
 {
      
@@ -223,11 +225,26 @@ RequestInfo WebHelper::parseRequest(Client &client)
 }
 
 boolean WebHelper::handleRoutes(Route *routes, int routes_length, RequestInfo &request, Client &client) {
-    boolean match = false;
-    
+    boolean match = false;    
     for(int i = 0; i < routes_length; i++) {
-        if(request.url == routes[i].route || request.path == routes[i].route) {
-            match = true;
+        if(routes[i].matchType == RouteMatchType::FULL) {
+            if(request.url == routes[i].route || request.path == routes[i].route) {
+                match = true;
+            }
+        } else if(routes[i].matchType == RouteMatchType::STARTS_WITH) {
+            if(request.url.startsWith(routes[i].route) || request.path.startsWith(routes[i].route)) {
+                match = true;
+            }
+        } else if(routes[i].matchType == RouteMatchType::ENDS_WITH) {
+            if(request.url.endsWith(routes[i].route) || request.path.endsWith(routes[i].route)) {
+                match = true;
+            }
+        } else if(routes[i].matchType == RouteMatchType::CONTAINS) {
+            if(request.url.indexOf(routes[i].route) > - 1 || request.path.indexOf(routes[i].route) > - 1) {
+                match = true;
+            }
+        }
+        if (match) {
             routes[i].handler(request, client);
             break;
         }
@@ -235,14 +252,16 @@ boolean WebHelper::handleRoutes(Route *routes, int routes_length, RequestInfo &r
     return match;
 }
 
-void WebHelper::respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client) {
+void WebHelper::respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client, TokenHandler tokenHandler) {
     ResponseType resp = ResponseTypes[statusCode];
     client.print("HTTP/1.1 ");
     client.print(resp.statusCode);
     client.print(" ");
     client.println(resp.message);
-    client.print("Content-Type: ");
-    client.println(contentType);
+    if(contentType.length() > 0) {
+        client.print("Content-Type: ");
+        client.println(contentType);
+    }
     if(headers.length() > 0) {
         client.println(headers);
     }
@@ -250,11 +269,44 @@ void WebHelper::respondWith(StatusCode statusCode, String contentType, String he
     // read back a char
     char bChar;
     size_t len = strlen_P(body);
-    for (uint32_t k = 0; k < len; k++) {
-        bChar = pgm_read_byte_far(body + k);
-        client.print(bChar);
+    if(len > 0) {
+        boolean tknStarted = false;
+        boolean tknEnded = false;
+        String tokenStr = "";
+        int tokenStartSize = sizeof(START_TOKEN) -1;
+        int tokenEndSize = sizeof(END_TOKEN) -1;
+        for (uint32_t k = 0; k < len; k++) {
+            bChar = pgm_read_byte_far(body + k);
+            if (tokenHandler == NULL) { 
+                tokenStr += bChar;
+            } else {
+                tokenStr += bChar;
+                if(!tknStarted && tokenStr.endsWith(START_TOKEN)) {
+                    tokenStr = tokenStr.substring(0, tokenStr.length() - tokenStartSize);
+                    client.print(tokenStr);
+                    tokenStr = "";
+                    tknStarted = true;
+                    tknEnded = false;
+                }
+                if(tknStarted) {
+                    if(tokenStr.endsWith(END_TOKEN)) {
+                        tknStarted = false;
+                        tknEnded = true;
+                        tokenStr = tokenStr.substring(0, tokenStr.length() - tokenEndSize);
+                        // process token
+                        tokenHandler(tokenStr, client);
+                    }
+                }
+            }
+            if(tokenStr.length() == MAX_TOKEN_LENGTH || tknEnded) {
+                client.print(tokenStr);
+                tokenStr = "";
+                tknStarted = false;
+                tknEnded = false;
+            }
+        }
+        client.print(tokenStr);
+    }else {
+        client.println("");
     }
-    client.println();
-    // client.println(body);
-    client.println();
 }
