@@ -1,9 +1,15 @@
 #include <Arduino.h>
+#include <inttypes.h>
 #include <Client.h>
 #include <WebHelper.h>
+#include <avr/pgmspace.h>
+
+using namespace std;
 
 #define REQ_TYPE_LENGTH 8
-
+#define RESP_TYPE_LENGTH 15
+#define START_TOKEN "{{"
+#define END_TOKEN "}}"
 void WebHelper::init()
 {
      
@@ -20,15 +26,34 @@ const String WebHelper::RequestTypes[REQ_TYPE_LENGTH] = {
     "TRACE"
 };
 
-const char * WebHelper::REQ_USER_AGENT = "User-Agent:";
-const char * WebHelper::REQ_CONTENT_TYPE = "Content-Type:";
-const char * WebHelper::REQ_HOST = "Host:";
-const char * WebHelper::REQ_CONTENT_LENGTH = "Content-Length:";
-const char * WebHelper::REQ_AUTH = "Authorization:";
-const char * WebHelper::REQ_ACCEPT = "Accept:";
-const char * WebHelper::REQ_ACCEPT_ENC = "Accept-Encoding:";
-const char * WebHelper::REQ_ACCEPT_LNG = "Accept-Language:";
-const char * WebHelper::REQ_CONNECTION = "Connection:";
+const ResponseType WebHelper::ResponseTypes[RESP_TYPE_LENGTH] = {
+    { "OK", 200, StatusCode::OK },
+    { "Multiple Choices", 300, StatusCode::MULTIPLE_CHOICES },
+    { "Moved Permanentl", 301, StatusCode::MOVED_PERMANENTLY },
+    { "Found", 302, StatusCode::FOUND },
+    { "Not Modified", 304, StatusCode::NOT_MODIFIED },
+    { "Temporary Redirect", 307, StatusCode::TEMPORARY_REDIRECT },
+    { "Bad Request", 400, StatusCode::BAD_REQUEST },
+    { "Unauthorized", 401, StatusCode::UNAUTHORIZED },
+    { "Forbidden", 403, StatusCode:: FORBIDDEN },
+    { "Not Found", 404, StatusCode::NOT_FOUND },
+    { "Gone", 410, StatusCode::GONE },
+    { "Internal Server Error", 500, StatusCode::SERVER_ERROR },
+    { "Not Implemented", 501, StatusCode::NOT_IMPLEMENTED },
+    { "Service Unavailable", 503, StatusCode::SERVICE_UNAVAILABLE },
+    { "Permission Denied", 550, StatusCode::PERMISSION_DENIED }
+};
+
+
+const char * WebHelper::REQ_USER_AGENT PROGMEM = "User-Agent:";
+const char * WebHelper::REQ_CONTENT_TYPE PROGMEM = "Content-Type:";
+const char * WebHelper::REQ_HOST PROGMEM = "Host:";
+const char * WebHelper::REQ_CONTENT_LENGTH PROGMEM = "Content-Length:";
+const char * WebHelper::REQ_AUTH PROGMEM = "Authorization:";
+const char * WebHelper::REQ_ACCEPT PROGMEM = "Accept:";
+const char * WebHelper::REQ_ACCEPT_ENC PROGMEM = "Accept-Encoding:";
+const char * WebHelper::REQ_ACCEPT_LNG PROGMEM = "Accept-Language:";
+const char * WebHelper::REQ_CONNECTION PROGMEM = "Connection:";
 
 
 boolean WebHelper::setRequestValue(String & property, String &line, const char * match) {
@@ -208,4 +233,28 @@ boolean WebHelper::handleRoutes(Route *routes, int routes_length, RequestInfo &r
         }
     }
     return match;
+}
+
+void WebHelper::respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client) {
+    ResponseType resp = ResponseTypes[statusCode];
+    client.print("HTTP/1.1 ");
+    client.print(resp.statusCode);
+    client.print(" ");
+    client.println(resp.message);
+    client.print("Content-Type: ");
+    client.println(contentType);
+    if(headers.length() > 0) {
+        client.println(headers);
+    }
+    client.println();
+    // read back a char
+    char bChar;
+    size_t len = strlen_P(body);
+    for (uint32_t k = 0; k < len; k++) {
+        bChar = pgm_read_byte_far(body + k);
+        client.print(bChar);
+    }
+    client.println();
+    // client.println(body);
+    client.println();
 }

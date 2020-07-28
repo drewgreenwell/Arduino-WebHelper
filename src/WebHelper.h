@@ -12,6 +12,24 @@ enum RequestType {
     TRACE = 8
 };
 
+enum StatusCode {
+    OK = 0,
+    MULTIPLE_CHOICES = 1,
+    MOVED_PERMANENTLY = 2,
+    FOUND = 3,
+    NOT_MODIFIED = 4,
+    TEMPORARY_REDIRECT = 5,
+    BAD_REQUEST = 6,
+    UNAUTHORIZED = 7,
+    FORBIDDEN = 8,
+    NOT_FOUND = 9,
+    GONE = 10,
+    SERVER_ERROR = 11,
+    NOT_IMPLEMENTED = 12,
+    SERVICE_UNAVAILABLE = 13,
+    PERMISSION_DENIED = 14
+};
+
 struct RequestInfo {  
   RequestInfo() : contentLength(-1) { }
   int contentLength;
@@ -31,6 +49,12 @@ struct RequestInfo {
   String acceptLanguage;
   String connection;
   enum RequestType requestType;
+};
+
+struct ResponseType {
+    String message;
+    int statusCode;
+    enum StatusCode responseType;
 };
 
 typedef void (*RouteHandler)(RequestInfo &request, Client &client);
@@ -59,8 +83,10 @@ class WebHelper
         static const char * REQ_ACCEPT_LNG;
         static const char * REQ_CONNECTION;
         static const String RequestTypes[];
+        static const ResponseType ResponseTypes[];
         static RequestInfo parseRequest(Client &client);
         static boolean handleRoutes(Route *routes, int routes_length, RequestInfo &request, Client &client);
+        static void respondWith(StatusCode statusCode, String contentType, String headers, const char * body, Client &client);
 };
 
 #endif
