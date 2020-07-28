@@ -12,9 +12,7 @@
     font-size: 3.5rem;
     }
 }
-</style>
-<!-- Custom styles for this template -->
-<style>
+
 body {
 font-size: .875rem;
 }
@@ -96,6 +94,10 @@ padding-top: 48px; /* Space for fixed navbar */
 /*
 * Navbar
 */
+.navbar-nav .nav-link {
+    padding-right: .2rem;
+    padding-left: .2rem;
+}
 
 .navbar-brand {
 padding-top: .75rem;
